@@ -2,12 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: node-app
-  namespace: node-app
-  labels:
-    app: node-app
+  namespace: ai-platform
 spec:
   replicas: 2
-  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: node-app
@@ -16,37 +13,27 @@ spec:
       labels:
         app: node-app
     spec:
-      serviceAccountName: node-app
       containers:
         - name: node-app
-          image: node-app:latest
-          imagePullPolicy: IfNotPresent
+          image: aik8sregistry.azurecr.io/node-app:v1
           ports:
             - containerPort: 3000
-              name: http
-          env:
-            - name: PORT
-              value: "3000"
-            - name: SERVICE_NAME
-              value: "node-app"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
           readinessProbe:
             httpGet:
               path: /health
-              port: http
+              port: 3000
             initialDelaySeconds: 5
             periodSeconds: 10
-            timeoutSeconds: 2
           livenessProbe:
             httpGet:
               path: /health
-              port: http
+              port: 3000
             initialDelaySeconds: 10
             periodSeconds: 20
-            timeoutSeconds: 2
-          resources:
-            requests:
-              cpu: 50m
-              memory: 64Mi
-            limits:
-              cpu: 250m
-              memory: 256Mi
